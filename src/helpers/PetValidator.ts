@@ -5,8 +5,7 @@ export const nameValidation = (isPut: boolean): ValidationChain[] => {
   const nameregex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/; // regular expression with de spanish simbols and spaces
 
   const postValidators: ValidationChain[] = [
-    body("name")
-      .exists()
+    body("name").exists()
       .withMessage("name is required")
       .isString()
       .withMessage("pet name has to be string")
@@ -27,9 +26,7 @@ export const nameValidation = (isPut: boolean): ValidationChain[] => {
 
   // el siguiente validador hara que aunque se ingrese el mismo nombre a la mascota rechace la peticion de put
   const putValidators: ValidationChain[] = [
-    body("name")
-      .optional()
-      .isString()
+    body("name").optional().isString()
       .withMessage("name has to be string")
       .isLength({ min: 2, max: 20 })
       .withMessage("name minimun 3 characters and max 20 characters")
@@ -52,16 +49,12 @@ export const nameValidation = (isPut: boolean): ValidationChain[] => {
 export const genderValidation = (isPut: boolean): ValidationChain[] => {
   const postValidators: ValidationChain[] = [
     body("gender")
-      .exists()
-      .withMessage("gender is required")
-      .isIn(["macho", "hembra"])
+      .exists().withMessage("gender is required").isIn(["macho", "hembra"])
       .withMessage("gender has to be equal to 'macho' or 'hembra'")
   ];
 
   const putValidators: ValidationChain[] = [
-    body("gender")
-      .optional()
-      .isIn(["macho", "hembra"])
+    body("gender").optional().isIn(["macho", "hembra"])
       .withMessage("gender has to be equal to 'macho' or 'hembra'")
   ];
 

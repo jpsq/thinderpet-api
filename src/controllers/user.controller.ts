@@ -26,7 +26,6 @@ export const registerUser = async (req: Request, res: Response) => {
 
     return created(res, newUser)
   } catch (err) {
-    console.log("llego aca");
     console.log(err);
     error(res);
   }
@@ -85,7 +84,7 @@ export const loginUser = async (req: Request, res: Response) => {
       expiresIn: "1h",
     });
 
-    res.status(200).header("Authorization", `Bearer ${token}`).json({
+    res.status(200).header("Authorization", `Bearer token: ${token}`).json({
       message: "Successful login.",
       user,
     });
