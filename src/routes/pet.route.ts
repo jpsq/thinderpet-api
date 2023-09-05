@@ -92,9 +92,9 @@ router.put(
 );
 
 // [GET] Pet
-router.get("/:petId", auth, getPet);
+router.get("/:petId", [auth], getPet);
 
 // [DELETE] Pet
-router.delete("/:petId", auth, deletePet);
+router.delete("/:petId", [auth], deletePet);
 
 export { router };
