@@ -9,7 +9,7 @@ import { sendEmail } from "../utils/nodemailer";
 // [POST] create User
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const {
+    const { //estoy hay que cambiarlo a el formato ...body
       firstName,
       lastName,
       email,
@@ -17,6 +17,8 @@ export const registerUser = async (req: Request, res: Response) => {
       password,
       localization,
       phone,
+      latitud,
+      longitud
     } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -28,6 +30,8 @@ export const registerUser = async (req: Request, res: Response) => {
       password: hashedPassword,
       localization,
       phone,
+      latitud,
+      longitud,
     });
 
     await newUser.save();
@@ -50,6 +54,8 @@ export const updateUser = async (req: Request, res: Response) => {
       password,
       localization: localization,
       phone,
+      latitud,
+      longitud
     } = req.body;
     const userId = req.params.userId;
 
@@ -59,12 +65,15 @@ export const updateUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found." });
     }
 
+    //es posible solo pasarle el body
     user.firstName = firstName;
     user.lastName = lastName;
     user.email = email;
     user.username = username;
     user.localization = localization;
     user.phone = phone;
+    user.latitud = latitud;
+    user.longitud = longitud;
 
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 12);
@@ -74,9 +83,9 @@ export const updateUser = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(200).json({ message: "User updated successfully." });
-  } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ message: "Server error." });
+  } catch (err) {
+    console.error("Error updating user:", err);
+    return error(res)
   }
 };
 

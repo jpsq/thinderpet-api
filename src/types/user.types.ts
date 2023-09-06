@@ -9,6 +9,8 @@ export interface User {
   phone: number;
   photo: Object;
   localization: Object;
+  latitud: number;
+  longitud: number;
 }
 
 /* USER RESPONSE TYPE */
