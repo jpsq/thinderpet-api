@@ -12,6 +12,8 @@ import {
     badRequest
 } from "../handlers/response.handler";
 import { calcularDistancia } from "../utils/distances";
+import { User } from "../types/user.types";
+import UserModel from "../models/User.model";
 
 // [POST] create Pet
 export const createPet = async (
@@ -102,16 +104,17 @@ export const getPets = async (req: Request, res: Response) => {
                 path: "ownerId",
                 select: ["-createdAt", "-updatedAt", "-password", "-salt"]
             })
-        if (!pet) { return notfound(res) }
 
-        const ownerPet = pet.ownerId;
-        const latitudPet = +(ownerPet.latitud as number);
-        const longitudPet = +(ownerPet.longitud as number);
+        if (!pet) return notfound(res);
 
-        const ownerIdToExclude = ownerPet.id; // ID del propio dueño
+        const ownerOfPet = await UserModel.findById(pet.ownerId);
+        if (!ownerOfPet) return notfound(res);
+
+        const latitudPet = +(ownerOfPet.latitud as number);
+        const longitudPet = +(ownerOfPet.longitud as number);
 
         const proposedPets = await PetModel.find({
-            ownerId: { $ne: ownerIdToExclude } // Evita que se traigan las mascotas del propio dueño
+            ownerId: { $ne: ownerOfPet._id } // Evita que se traigan las mascotas del propio dueño
         })
             .select(["-createdAt", "-updatedAt"])
             .populate({
@@ -133,7 +136,7 @@ export const getPets = async (req: Request, res: Response) => {
             const latitudProposedPet = +(ownerProposedPet.latitud as number);
             const longitudProposedPet = +(ownerProposedPet.longitud as number);
             return {
-                proposedPet,
+                pet: proposedPet,
                 distanceToPet: calcularDistancia(latitudPet, longitudPet, latitudProposedPet, longitudProposedPet)
             }
         })
