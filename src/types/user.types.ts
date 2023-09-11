@@ -7,10 +7,11 @@ export interface User {
   username: string;
   password: string;
   phone: number;
-  photo: Object;
+  image?: {
+    secure_url: string;
+    public_id: string;
+  };
   localization: Object;
-  latitud: number;
-  longitud: number;
 }
 
 /* USER RESPONSE TYPE */

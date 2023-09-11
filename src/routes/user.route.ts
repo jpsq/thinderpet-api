@@ -12,8 +12,10 @@ import {
   requestPasswordReset,
   updateUser,
   getUserById,
+  uploadAvatar,
 } from "../controllers/user.controller";
 import { auth } from "../helpers/token";
+import { uploads } from "../utils/multer";
 
 const router = express.Router();
 
@@ -27,6 +29,11 @@ router.post(
   "/reset-password/:userId/:token",
   validateUpdatePasswordUser,
   resetPassword
+);
+router.post(
+  "/upload-image/:userId",
+  [auth, uploads.single("avatar")],
+  uploadAvatar
 );
 
 export { router };
