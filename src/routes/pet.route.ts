@@ -9,6 +9,8 @@ import {
   deletePet,
   getPet,
   updatePet,
+  getPets,
+  getUserPets,
   uploadImages,
 } from "../controllers/pet.controller";
 import UserModel from "../models/User.model";
@@ -18,9 +20,9 @@ import { uploads } from "../utils/multer";
 const router = Router();
 
 router.post(
-  "/",
-  [
-    auth,
+    "/",
+    [
+        auth,
 
     ...nameValidation(false),
     ...genderValidation(false),
@@ -47,11 +49,11 @@ router.post(
         return false;
       }),
 
-    body("age")
-      .exists()
-      .withMessage("age is required")
-      .isNumeric()
-      .withMessage("age require a numeric value"),
+        body("age")
+            .exists()
+            .withMessage("age is required")
+            .isNumeric()
+            .withMessage("age require a numeric value"),
 
     validate,
   ],
@@ -90,7 +92,13 @@ router.put(
 );
 
 // [GET] Pet
-router.get("/:petId", auth, getPet);
+router.get("/:petId", [auth], getPet);
+
+//[GET] Pet from a ownderId
+router.get("/petsfromowner/:ownerId", [auth], getUserPets)
+
+//[GET] Pets sorted only by localization
+router.get("/thinder/:petId", [auth], getPets)
 
 // [DELETE] Pet
 router.delete("/:petId", auth, deletePet);

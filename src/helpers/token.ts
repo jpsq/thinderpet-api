@@ -25,7 +25,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     const user = await User.findOne({ _id: decodedToken.id });
 
     if (!user) {
-      return res.status(401).json({ message: "Unauthorized. User not found" });
+      return res.status(401).json({ message: "Unauthorized. User of token not found" });
     }
 
     req.user = user;

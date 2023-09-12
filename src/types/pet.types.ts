@@ -16,4 +16,4 @@ export interface Pet {
 
 /* USER RESPONSE TYPE */
 
-export type PetRequest = Omit<Pet, "ownerId">;
+export type PetRequest = Pet;

@@ -12,6 +12,6 @@ export interface User {
     public_id: string;
   };
   localization: Object;
+  latitud: number;
+  longitud: number;
 }
-
-/* USER RESPONSE TYPE */

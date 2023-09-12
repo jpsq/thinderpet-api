@@ -1,5 +1,6 @@
 /// <reference path="../types/custom.d.ts" />
 import axios from "axios";
+import { filteredMatch, count } from "../utils/queryFilter";
 import { type Request, type Response } from "express";
 import { type PetRequest } from "../types/pet.types";
 import PetModel from "../models/Pet.model";
@@ -10,6 +11,9 @@ import {
   notfound,
   badRequest,
 } from "../handlers/response.handler";
+import { calcularDistancia } from "../utils/distances";
+import { User } from "../types/user.types";
+import UserModel from "../models/User.model";
 import { uploadImage, deleteImage } from "../utils/cloudinary.js";
 import fs from "fs-extra";
 
@@ -99,8 +103,90 @@ export const deletePet = async (req: Request, res: Response) => {
 
     return ok(res, {
       message: "Pet was deleted successfully",
-      deletedPet,
+      deletedPet
     });
+  } catch (e) {
+    console.log(e);
+    error(res);
+  }
+};
+
+// [GET] get Pets
+export const getPets = async (req: Request, res: Response) => {
+  try {
+
+    const pet = await PetModel.findById(req.params.petId)
+      .populate({
+        path: "ownerId",
+        select: ["-createdAt", "-updatedAt", "-password", "-salt"]
+      })
+
+    if (!pet) return notfound(res);
+
+    const ownerOfPet = await UserModel.findById(pet.ownerId);
+    if (!ownerOfPet) return notfound(res);
+
+    const latitudPet = +(ownerOfPet.latitud as number);
+    const longitudPet = +(ownerOfPet.longitud as number);
+
+    const proposedPets = await PetModel.find({
+      ownerId: { $ne: ownerOfPet._id } // Evita que se traigan las mascotas del propio dueño
+    })
+      .select(["-createdAt", "-updatedAt"])
+      .populate({
+        path: "breedId",
+        select: ["-createdAt", "-updatedAt"],
+        populate: {
+          path: "specieId",
+          select: ["-createdAt", "-updatedAt"]
+        }
+      })
+      .populate({
+        path: "ownerId",
+        select: ["-createdAt", "-updatedAt", "-password", "-salt"]
+      });
+
+
+    const sortedPets = proposedPets.map((proposedPet: any) => {
+      const ownerProposedPet = proposedPet.ownerId;
+      const latitudProposedPet = +(ownerProposedPet.latitud as number);
+      const longitudProposedPet = +(ownerProposedPet.longitud as number);
+      return {
+        pet: proposedPet,
+        distanceToPet: calcularDistancia(latitudPet, longitudPet, latitudProposedPet, longitudProposedPet)
+      }
+    })
+
+    sortedPets.sort((a, b) => a.distanceToPet - b.distanceToPet);
+
+    return ok(res, {
+      info: {
+        totalPets: await count(PetModel, req, sortedPets),
+      },
+      result: sortedPets
+    });
+  } catch (e) {
+    console.log(e);
+    error(res);
+  }
+};
+
+export const getUserPets = async ({ params }: Request, res: Response) => {
+  try {
+    const pets = await PetModel.find({ ownerId: params.ownerId })
+      .select(["-createdAt", "-updatedAt"])
+      .populate({
+        path: "breedId",
+        select: ["-createdAt", "-updatedAt"],
+        populate: {
+          path: "specieId",
+          select: ["-createdAt", "-updatedAt"]
+        }
+      });
+
+    if (pets.length === 0) return notfound(res);
+
+    return ok(res, pets);
   } catch (e) {
     console.log(e);
     error(res);

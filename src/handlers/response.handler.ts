@@ -27,8 +27,8 @@ export const unauthorize = (res: Response) =>
     message: "Unauthorized"
   });
 
-export const notfound = (res: Response) =>
+export const notfound = (res: Response, message = "Resource not found") =>
   responseWithData(res, 404, {
     status: 404,
-    message: "Resource not found"
+    message
   });

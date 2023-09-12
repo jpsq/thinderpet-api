@@ -33,6 +33,14 @@ const UserSchema = new Schema<User>(
       type: Number,
       required: true,
     },
+    latitud: {
+      type: Number,
+      required: true,
+    },
+    longitud: {
+      type: Number,
+      required: true,
+    },
     image: {
       secure_url: String,
       public_id: String,
