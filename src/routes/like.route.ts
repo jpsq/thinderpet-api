@@ -1,10 +1,9 @@
 import { Router, query } from "express";
-import LikeModel from "../models/like.model";
 import { body } from "express-validator";
 import { auth } from "../helpers/token";
 import { likePet, verifyMatches } from "../controllers/like.controller";
 import PetModel from "../models/Pet.model";
-import { verify } from "jsonwebtoken";
+import validate from "../handlers/request.handler";
 
 const router = Router()
 
@@ -28,13 +27,16 @@ router.post("/",
                 const pet = await PetModel.findById(pet_target_id);
                 if (!pet) throw new Error("target pet doesn't exist");
                 return false;
-            })
+            }),
+
+        validate
 
     ], likePet);
 
 router.get("/verifymatches/:userId",
     [
-        auth
+        auth,
+        validate
     ], verifyMatches)
 
 export { router }

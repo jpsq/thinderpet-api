@@ -16,14 +16,15 @@ import {
 } from "../controllers/user.controller";
 import { auth } from "../helpers/token";
 import { uploads } from "../utils/multer";
+import validate from "../handlers/request.handler";
 
 const router = express.Router();
 
 router.post("/login", loginUser);
 router.post("/register", validateRegisterUser, registerUser);
-router.get("/:userId", [auth], getUserById);
-router.put("/update/:userId", [auth], validateUpdateUser, updateUser);
-router.delete("/delete/:userId", [auth], deleteUser);
+router.get("/:userId", [auth, validate], getUserById);
+router.put("/update/:userId", [auth, validate], validateUpdateUser, updateUser);
+router.delete("/delete/:userId", [auth, validate], deleteUser);
 router.post("/forgot-password", requestPasswordReset);
 router.post(
   "/reset-password/:userId/:token",
@@ -32,7 +33,7 @@ router.post(
 );
 router.post(
   "/upload-image/:userId",
-  [auth, uploads.single("avatar")],
+  [auth, validate, uploads.single("avatar")],
   uploadAvatar
 );
 

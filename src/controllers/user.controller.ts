@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { type Request, type Response } from "express";
 import UserModel from "../models/User.model";
-import { created, error } from "../handlers/response.handler";
+import { created, error, notfound, ok } from "../handlers/response.handler";
 import { SECRET_TOKEN, KEY_MAIL } from "../config";
 import { sendEmail } from "../utils/nodemailer";
 import { uploadImage, deleteImage } from "../utils/cloudinary.js";
@@ -11,7 +11,7 @@ import fs from "fs-extra";
 // [POST] create User
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { //estoy hay que cambiarlo a el formato ...body
+    const {
       firstName,
       lastName,
       email,
@@ -37,13 +37,12 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     await newUser.save();
-
     return created(res, newUser);
+
   } catch (err) {
+
     console.log(err);
-    return res
-      .status(500)
-      .json({ error: "Hubo un error durante el registro." });
+    return error(res);
   }
 };
 
@@ -62,14 +61,12 @@ export const updateUser = async (req: Request, res: Response) => {
       longitud
     } = req.body;
     const userId = req.params.userId;
-
     const user = await UserModel.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return notfound(res, "User not found")
     }
 
-    //es posible solo pasarle el body
     user.firstName = firstName;
     user.lastName = lastName;
     user.email = email;
@@ -85,8 +82,8 @@ export const updateUser = async (req: Request, res: Response) => {
     }
 
     await user.save();
+    return ok(res, user);
 
-    res.status(200).json({ message: "User updated successfully." });
   } catch (err) {
     console.error("Error updating user:", err);
     return error(res)
@@ -97,14 +94,14 @@ export const updateUser = async (req: Request, res: Response) => {
 export const getUserById = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
-
     const user = await UserModel.findById(userId, { password: 0 });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return notfound(res, "User not found")
     }
 
-    return res.status(200).json(user);
+    return ok(res, user)
+
   } catch (err) {
     console.error("Error fetching user:", err);
     return error(res);
@@ -123,7 +120,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const user = userByEmail || userByUsername;
 
     if (!user) {
-      return res.status(401).json({ message: "User not found." });
+      return notfound(res, "User not found")
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
@@ -135,14 +132,14 @@ export const loginUser = async (req: Request, res: Response) => {
       expiresIn: "1h",
     });
 
-    res.status(200).header("Authorization", `${token}`).json({
+    res.status(200).header("Authorization", `Bearer ${token}`).json({
       message: "Successful login.",
       token: token,
       user,
     });
-  } catch (error) {
-    console.error("Error during login:", error);
-    res.status(500).json({ message: "Server error." });
+  } catch (err) {
+    console.error("Error during login:", err);
+    return error(res);
   }
 };
 
@@ -154,7 +151,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     const user = await UserModel.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return notfound(res, "User not found")
     }
 
     if (user.image && user.image.public_id) {
@@ -164,9 +161,9 @@ export const deleteUser = async (req: Request, res: Response) => {
     await user.deleteOne();
 
     res.status(200).json({ message: "User deleted successfully." });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Server error." });
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    return error(res);
   }
 };
 
@@ -178,7 +175,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     const user = await UserModel.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return notfound(res, "User not found")
     }
 
     const token = jwt.sign({ id: user._id }, KEY_MAIL, {
@@ -188,9 +185,9 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     sendEmail(user, token);
 
     res.status(200).json({ message: "Password reset email sent." });
-  } catch (error) {
-    console.error("Error requesting password reset:", error);
-    res.status(500).json({ message: "Server error." });
+  } catch (err) {
+    console.error("Error requesting password reset:", err);
+    return error(res)
   }
 };
 
@@ -213,7 +210,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     const user = await UserModel.findById(userId, { _id: decodedToken.id });
 
     if (!user) {
-      return res.status(404).json({ Status: "User not found" });
+      return notfound(res, "User not found")
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -221,9 +218,9 @@ export const resetPassword = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(200).json({ message: "Password reset successful." });
-  } catch (error) {
-    console.error("Error resetting password:", error);
-    res.status(500).json({ message: "Server error." });
+  } catch (err) {
+    console.error("Error resetting password:", err);
+    return error(res)
   }
 };
 
@@ -234,13 +231,11 @@ export const uploadAvatar = async (req: Request, res: Response) => {
     const user = await UserModel.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return notfound(res, "User not found")
     }
 
     if (!req.file) {
-      return res
-        .status(404)
-        .json({ message: "No se proporcionó ninguna imagen." });
+      return notfound(res, "No se proporciono imagen.")
     }
 
     // Sube la imagen a Cloudinary y obtén la URL y otros datos relevantes
@@ -258,8 +253,9 @@ export const uploadAvatar = async (req: Request, res: Response) => {
     });
 
     return res.status(200).json({ secure_url: imageUrl, public_id: publicId });
-  } catch (error) {
-    console.error("Error durante la subida de la imagen:", error);
-    res.status(500).json({ message: "Error del servidor." });
+
+  } catch (err) {
+    console.error("Error durante la subida de la imagen:", err);
+    return error(res)
   }
 };

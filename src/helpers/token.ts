@@ -14,8 +14,8 @@ declare global {
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const token = req.header("Authorization");
 
+    const token = req.header("Authorization");
     if (!token) {
       return res.status(401).json({ message: "Unauthorized. Token missing" });
     }
@@ -23,16 +23,21 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     const decodedToken: any = jwt.verify(token, SECRET_TOKEN);
 
     const user = await User.findOne({ _id: decodedToken.id });
-
     if (!user) {
       return res.status(401).json({ message: "Unauthorized. User of token not found" });
     }
 
     req.user = user;
-
     next();
-  } catch (error) {
-    console.error("Error authenticating token:", error);
-    return res.status(401).json({ message: "Unauthorized. Invalid token" });
+
+  } catch (err: any) {
+
+    console.error("Error authenticating token:", err);
+
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Unauthorized. Token expired." })
+    } else {
+      return res.status(401).json({ message: "Unauthorized. Invalid token" });
+    }
   }
 };

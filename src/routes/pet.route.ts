@@ -20,9 +20,9 @@ import { uploads } from "../utils/multer";
 const router = Router();
 
 router.post(
-    "/",
-    [
-        auth,
+  "/",
+  [
+    auth,
 
     ...nameValidation(false),
     ...genderValidation(false),
@@ -49,11 +49,11 @@ router.post(
         return false;
       }),
 
-        body("age")
-            .exists()
-            .withMessage("age is required")
-            .isNumeric()
-            .withMessage("age require a numeric value"),
+    body("age")
+      .exists()
+      .withMessage("age is required")
+      .isNumeric()
+      .withMessage("age require a numeric value"),
 
     validate,
   ],
@@ -92,20 +92,20 @@ router.put(
 );
 
 // [GET] Pet
-router.get("/:petId", [auth], getPet);
+router.get("/:petId", [auth, validate], getPet);
 
 //[GET] Pet from a ownderId
-router.get("/petsfromowner/:ownerId", [auth], getUserPets)
+router.get("/petsfromowner/:ownerId", [auth, validate], getUserPets)
 
 //[GET] Pets sorted only by localization
-router.get("/thinder/:petId", [auth], getPets)
+router.get("/thinder/:petId", [auth, validate], getPets)
 
 // [DELETE] Pet
-router.delete("/:petId", auth, deletePet);
+router.delete("/:petId", [auth, validate], deletePet);
 
 router.post(
   "/upload-pet/:petId",
-  [auth, uploads.array("avatar")],
+  [auth, validate, uploads.array("avatar")],
   uploadImages
 );
 
