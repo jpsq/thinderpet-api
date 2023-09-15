@@ -234,5 +234,5 @@ export const uploadAvatar = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Error durante la subida de la imagen:", err);
     return error(res);
-git  }
+  }
 };
