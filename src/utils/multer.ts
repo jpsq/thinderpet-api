@@ -23,9 +23,10 @@ const fileFilter = (
 };
 
 const storage = multer.diskStorage({
-  destination: function (req: Request, file: Express.Multer.File, cb) {
-    cb(null, "./uploads");
-  },
+  // destination: function (req: Request, file: Express.Multer.File, cb) {
+  //   cb(null, "../uploads");
+  // },
+  destination: "./uploads",
   filename: function (req: Request, file: Express.Multer.File, cb) {
     cb(null, file.originalname);
   },

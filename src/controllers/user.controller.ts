@@ -10,40 +10,19 @@ import { uploadImage, deleteImage } from "../utils/cloudinary.js";
 import fs from "fs-extra";
 
 // [POST] create User
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (
+  { body }: Request<any, any, UserRequest>,
+  res: Response
+) => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      username,
-      password,
-      localization,
-      phone,
-      latitud,
-      longitud
-    } = req.body;
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = new UserModel({
-      firstName,
-      lastName,
-      email,
-      username,
-      password: hashedPassword,
-      localization,
-      phone,
-      latitud,
-      longitud,
-    });
-
-    await newUser.save();
-    return created(res, newUser);
-
+    const hashedPassword = await bcrypt.hash(body.password, 12);
+    const user = await UserModel.create({ ...body, password: hashedPassword });
+    return created(res, user);
   } catch (err) {
-
     console.log(err);
-    return error(res);
+    return res
+      .status(500)
+      .json({ error: "Hubo un error durante el registro." });
   }
 };
 
@@ -65,7 +44,7 @@ export const updateUser = async (req: Request, res: Response) => {
     const user = await UserModel.findById(userId);
 
     if (!user) {
-      return notfound(res, "User not found")
+      return notfound(res, "User not found");
     }
 
     user.firstName = firstName;
@@ -84,7 +63,6 @@ export const updateUser = async (req: Request, res: Response) => {
 
     await user.save();
     return ok(res, user);
-
   } catch (err) {
     console.error("Error updating user:", err);
     return error(res);
@@ -98,11 +76,10 @@ export const getUserById = async (req: Request, res: Response) => {
     const user = await UserModel.findById(userId, { password: 0 });
 
     if (!user) {
-      return notfound(res, "User not found")
+      return notfound(res, "User not found");
     }
 
-    return ok(res, user)
-
+    return ok(res, user);
   } catch (err) {
     console.error("Error fetching user:", err);
     return error(res);
@@ -121,7 +98,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const user = userByEmail || userByUsername;
 
     if (!user) {
-      return notfound(res, "User not found")
+      return notfound(res, "User not found");
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
@@ -152,7 +129,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     const user = await UserModel.findById(userId);
 
     if (!user) {
-      return notfound(res, "User not found")
+      return notfound(res, "User not found");
     }
 
     if (user.image && user.image.public_id) {
@@ -176,7 +153,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     const user = await UserModel.findOne({ email });
 
     if (!user) {
-      return notfound(res, "User not found")
+      return notfound(res, "User not found");
     }
 
     const token = jwt.sign({ id: user._id }, KEY_MAIL, {
@@ -188,7 +165,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Password reset email sent." });
   } catch (err) {
     console.error("Error requesting password reset:", err);
-    return error(res)
+    return error(res);
   }
 };
 
@@ -211,7 +188,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     const user = await UserModel.findById(userId, { _id: decodedToken.id });
 
     if (!user) {
-      return notfound(res, "User not found")
+      return notfound(res, "User not found");
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -221,7 +198,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Password reset successful." });
   } catch (err) {
     console.error("Error resetting password:", err);
-    return error(res)
+    return error(res);
   }
 };
 
@@ -232,11 +209,11 @@ export const uploadAvatar = async (req: Request, res: Response) => {
     const user = await UserModel.findById(userId);
 
     if (!user) {
-      return notfound(res, "User not found")
+      return notfound(res, "User not found");
     }
 
     if (!req.file) {
-      return notfound(res, "No se proporciono imagen.")
+      return notfound(res, "No se proporciono imagen.");
     }
 
     // Sube la imagen a Cloudinary y obtén la URL y otros datos relevantes
@@ -254,9 +231,8 @@ export const uploadAvatar = async (req: Request, res: Response) => {
     });
 
     return res.status(200).json({ secure_url: imageUrl, public_id: publicId });
-
   } catch (err) {
     console.error("Error durante la subida de la imagen:", err);
-    return error(res)
-  }
+    return error(res);
+git  }
 };
