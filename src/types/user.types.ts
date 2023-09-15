@@ -15,3 +15,5 @@ export interface User {
   latitud: number;
   longitud: number;
 }
+
+export type UserRequest = User;

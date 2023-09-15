@@ -30,19 +30,21 @@ router.post(
     body("breedId")
       .exists()
       .withMessage("breedId is required")
-      .isLength({ min: 16 })
-      .withMessage("breedId minimun 16 characters")
       .custom(async (value) => {
         const breed = await BreedModel.findById(value);
         if (!breed) throw new Error("breedId doesn't exist");
         return false;
       }),
 
+    body("description")
+      .optional()
+      .isString()
+      .withMessage("despcrition only can be a string")
+      .isLength({ min: 4 }),
+
     body("ownerId")
       .exists()
       .withMessage("ownerId is required")
-      .isLength({ min: 16 })
-      .withMessage("ownerId minimun 16 characters")
       .custom(async (value) => {
         const user = await UserModel.findById(value);
         if (!user) throw new Error("ownerId doesn't exist");
@@ -74,17 +76,23 @@ router.put(
     ...nameValidation(true),
     ...genderValidation(true),
 
+    body("description")
+      .optional()
+      .isString()
+      .withMessage("despcrition only can be a string")
+      .isLength({ min: 4 }),
+
     body("breedId")
-      .if(body("breedId").exists())
-      .isLength({ min: 16 })
-      .withMessage("breedId minimun 16 characters")
+      .optional()
       .custom(async (value) => {
         const breed = await BreedModel.findById(value);
         if (!breed) throw new Error("breedId doesn't exist");
         return false;
       }),
 
-    body("ownerId").isEmpty().withMessage("userId can not be updated"),
+    body("ownerId")
+      .isEmpty().
+      withMessage("userId can not be updated"),
 
     validate,
   ],

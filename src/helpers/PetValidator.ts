@@ -1,8 +1,9 @@
 import { body, type ValidationChain } from "express-validator";
 import PetModel from "../models/Pet.model";
 
+export const nameregex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/; // regular expression with de spanish simbols and spaces
+
 export const nameValidation = (isPut: boolean): ValidationChain[] => {
-  const nameregex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/; // regular expression with de spanish simbols and spaces
 
   const postValidators: ValidationChain[] = [
     body("name").exists()

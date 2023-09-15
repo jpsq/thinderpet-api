@@ -4,6 +4,7 @@ import { body } from "express-validator";
 import { SpecieModel } from "../models/Breed&Specie.model";
 import validate from "../handlers/request.handler";
 import { createSpecie, getSpecies, deleteSpecies } from "../controllers/specie.controller";
+import { nameregex } from "../helpers/PetValidator";
 
 const router = Router();
 
@@ -21,7 +22,10 @@ router.post(
                 const specie = await SpecieModel.findOne({ specie: value });
                 if (specie) throw new Error("specie already exist");
                 return false;
-            }),
+            })
+            .matches(nameregex)
+            .withMessage("name can only contain letters and spaces"),
+
         validate
     ],
     createSpecie

@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { type Request, type Response } from "express";
 import UserModel from "../models/User.model";
+import { type UserRequest } from "../types/user.types";
 import { created, error, notfound, ok } from "../handlers/response.handler";
 import { SECRET_TOKEN, KEY_MAIL } from "../config";
 import { sendEmail } from "../utils/nodemailer";
@@ -58,7 +59,7 @@ export const updateUser = async (req: Request, res: Response) => {
       localization: localization,
       phone,
       latitud,
-      longitud
+      longitud,
     } = req.body;
     const userId = req.params.userId;
     const user = await UserModel.findById(userId);
@@ -86,7 +87,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
   } catch (err) {
     console.error("Error updating user:", err);
-    return error(res)
+    return error(res);
   }
 };
 

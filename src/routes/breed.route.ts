@@ -4,6 +4,7 @@ import { auth } from "../helpers/token";
 import { BreedModel, SpecieModel } from "../models/Breed&Specie.model";
 import { createBreed, getBreeds, deleteBreeds } from "../controllers/breed.controller";
 import validate from "../handlers/request.handler";
+import { nameregex } from "../helpers/PetValidator";
 
 const router = Router()
 
@@ -36,7 +37,9 @@ router.post(
                 const breed = await BreedModel.findOne({ breed: value });
                 if (breed) throw new Error("breed already exist");
                 return false;
-            }),
+            })
+            .matches(nameregex)
+            .withMessage("name can only contain letters and spaces"),
 
         validate
     ],
